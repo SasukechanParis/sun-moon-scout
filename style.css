@@ -1,0 +1,130 @@
+:root {
+  --sun-color: #f5a623;
+  --moon-color: #6b7fa3;
+  --bg: #fafafa;
+  --panel-bg: #ffffff;
+  --border: #e0e0e0;
+  --text: #222;
+  --accent: #2b6cb0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 40px;
+}
+
+.app-header {
+  padding: 16px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--border);
+}
+.app-header h1 { margin: 0; font-size: 1.3rem; }
+.subtitle { margin: 4px 0 0; color: #666; font-size: 0.85rem; }
+
+main { padding: 12px; max-width: 720px; margin: 0 auto; }
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.panel h2 { margin: 0 0 10px; font-size: 1.05rem; }
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+}
+.mode-btn { background: #fff; color: var(--accent); }
+.mode-btn.active { background: var(--accent); color: #fff; }
+.ghost-btn { background: #fff; color: #888; border-color: var(--border); }
+
+input[type="text"], input[type="date"], input[type="time"], input[type="number"], select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+input[type="range"] { flex: 1; }
+
+#map {
+  height: 45vh;
+  min-height: 300px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.hint { color: #777; font-size: 0.82rem; margin: 4px 0; }
+
+.emoji-marker span { font-size: 22px; }
+
+.verdict {
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: #f0f4f8;
+}
+.verdict.順光 { background: #fff3d6; }
+.verdict.逆光 { background: #ffe3e0; }
+.verdict.トップライト { background: #e6f0ff; }
+.verdict.サイド光 { background: #eaf7e6; }
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .results-grid { grid-template-columns: 1fr; }
+}
+
+.result-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+.result-card h3 { margin: 0 0 6px; font-size: 0.95rem; }
+.result-card p { margin: 4px 0; font-size: 0.88rem; }
+.sun-card { border-color: var(--sun-color); }
+.moon-card { border-color: var(--moon-color); }
+
+#low-moon-windows, #reverse-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.88rem;
+}
+#reverse-results li {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+#reverse-results li:active { background: #f0f4f8; }

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>サンムーンスカウト</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>☀️🌙 サンムーンスカウト</h1>
+  <p class="subtitle">ロケハン用 太陽・月の位置プランナー</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>① 地点を決める</h2>
+    <div class="row">
+      <button id="btn-mode-camera" class="mode-btn active">📷 撮影位置を置く</button>
+      <button id="btn-mode-target" class="mode-btn">🎯 対象物を置く(任意)</button>
+      <button id="btn-clear-target" class="ghost-btn">対象物クリア</button>
+    </div>
+    <div class="row">
+      <button id="btn-geolocate">📍 現在地を撮影位置にする</button>
+    </div>
+    <div class="row">
+      <input id="input-coord" type="text" placeholder="座標を貼り付け（例: 48.8606, 2.3376 / Googleマップの@座標URL）" />
+      <button id="btn-apply-coord">この座標を撮影位置にする</button>
+    </div>
+    <div id="map"></div>
+    <p class="hint">地図をタップでもピンを置けます。撮影位置(📷)と対象物(🎯)を両方置くと、その2点を結ぶ方位が自動で「撮影方向」になります。</p>
+    <div class="row">
+      <label>手動で撮影方向を指定（対象物ピンがない場合）
+        <input id="input-manual-bearing" type="range" min="0" max="359" value="0" />
+        <span id="manual-bearing-label">北 (0°)</span>
+      </label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>② 日時を決める</h2>
+    <div class="row">
+      <input id="input-date" type="date" />
+      <input id="input-time" type="time" />
+    </div>
+    <div class="row">
+      <input id="input-time-slider" type="range" min="0" max="1439" value="720" />
+      <span id="time-slider-label"></span>
+    </div>
+  </section>
+
+  <section class="panel" id="results-panel">
+    <h2>③ 結果</h2>
+    <div id="light-verdict" class="verdict"></div>
+    <div class="results-grid">
+      <div class="result-card sun-card">
+        <h3>☀️ 太陽</h3>
+        <p>方位: <span id="sun-azimuth">-</span></p>
+        <p>高度: <span id="sun-altitude">-</span></p>
+        <p>日の出: <span id="sun-sunrise">-</span> ／ 日の入り: <span id="sun-sunset">-</span></p>
+        <p>薄暮(朝/夕): <span id="sun-dawn">-</span> ／ <span id="sun-dusk">-</span></p>
+      </div>
+      <div class="result-card moon-card">
+        <h3>🌙 月</h3>
+        <p>方位: <span id="moon-azimuth">-</span></p>
+        <p>高度: <span id="moon-altitude">-</span></p>
+        <p>月相: <span id="moon-phase">-</span>（輝面 <span id="moon-fraction">-</span>）</p>
+        <p>月の出: <span id="moon-rise">-</span> ／ 月の入り: <span id="moon-set">-</span></p>
+      </div>
+    </div>
+    <div class="result-card">
+      <h3>この日、月が低め(0〜20°)で見える時間帯</h3>
+      <ul id="low-moon-windows"><li>-</li></ul>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>④ 逆算検索：あの方向に太陽/月が来る日時を探す</h2>
+    <p class="hint">対象物ピン(🎯)または手動方位を目標にして、これから先いつその方位に太陽/月が来るかを探します。</p>
+    <div class="row">
+      <label>対象天体
+        <select id="select-body">
+          <option value="sun">太陽</option>
+          <option value="moon">月</option>
+        </select>
+      </label>
+      <label>高度の条件
+        <select id="select-altitude-preset">
+          <option value="any">指定なし</option>
+          <option value="low">低め (0〜15°)</option>
+          <option value="golden">際どく低い (0〜6°)</option>
+          <option value="high">高め (45°以上)</option>
+        </select>
+      </label>
+      <label>何日先まで探す
+        <input id="input-search-days" type="number" value="60" min="1" max="365" />
+      </label>
+    </div>
+    <div class="row">
+      <button id="btn-reverse-search">🔍 検索する</button>
+    </div>
+    <ul id="reverse-results"></ul>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/astro.js"></script>
+<script src="js/mapview.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
