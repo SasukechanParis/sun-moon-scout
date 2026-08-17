@@ -128,3 +128,67 @@ input[type="range"] { flex: 1; }
   cursor: pointer;
 }
 #reverse-results li:active { background: #f0f4f8; }
+
+.ar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 1000;
+}
+.ar-overlay video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ar-overlay canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ar-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(rgba(0,0,0,0.6), transparent);
+}
+#btn-close-ar {
+  background: rgba(0,0,0,0.6);
+  border-color: rgba(255,255,255,0.4);
+}
+.ar-status {
+  color: #fff;
+  font-size: 0.78rem;
+  margin: 0;
+  flex: 1;
+}
+.ar-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 14px 18px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+}
+.ar-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.ar-controls input[type="range"] { flex: 1; }
+.ar-hint {
+  color: #ddd;
+  font-size: 0.72rem;
+  margin: 6px 0 0;
+}

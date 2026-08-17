@@ -23,6 +23,7 @@
     </div>
     <div class="row">
       <button id="btn-geolocate">📍 現在地を撮影位置にする</button>
+      <button id="btn-open-ar">🎥 カメラで狙う(実験的)</button>
     </div>
     <div class="row">
       <input id="input-coord" type="text" placeholder="座標を貼り付け（例: 48.8606, 2.3376 / Googleマップの@座標URL）" />
@@ -104,11 +105,32 @@
   </section>
 </main>
 
+<div id="ar-overlay" class="ar-overlay">
+  <video id="ar-video" playsinline muted></video>
+  <canvas id="ar-canvas"></canvas>
+  <div class="ar-topbar">
+    <button id="btn-close-ar">✕ 閉じる</button>
+    <p id="ar-status" class="ar-status">起動中…</p>
+  </div>
+  <div class="ar-controls">
+    <label>方位のズレ補正
+      <input id="ar-heading-offset" type="range" min="-30" max="30" value="0" />
+      <span id="ar-heading-offset-label">0°</span>
+    </label>
+    <label>画角(FOV)調整
+      <input id="ar-fov" type="range" min="30" max="90" value="60" />
+      <span id="ar-fov-label">60°</span>
+    </label>
+    <p class="ar-hint">日没の方角など既知の方位が実際とズレていたら「方位のズレ補正」で合わせてください。端末を8の字に振るとコンパス精度が上がることがあります。</p>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
 <script src="js/geo.js"></script>
 <script src="js/astro.js"></script>
 <script src="js/mapview.js"></script>
 <script src="js/app.js"></script>
+<script src="js/ar.js"></script>
 </body>
 </html>
