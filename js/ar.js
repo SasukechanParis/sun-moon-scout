@@ -35,6 +35,7 @@ async function startAR() {
   const statusEl = document.getElementById("ar-status");
   overlay.style.display = "block";
   statusEl.textContent = "起動中…";
+  document.getElementById("ar-date").value = document.getElementById("input-date").value;
 
   if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
     try {
@@ -114,6 +115,9 @@ function drawARFrame() {
   const sun = getSunInfo(dt, state.camera.lat, state.camera.lng);
   const moon = getMoonInfo(dt, state.camera.lat, state.camera.lng);
 
+  drawARPath(ctx, canvas, heading, pitch, fov, vfov, state.dayPaths.sun, "#f5a623");
+  drawARPath(ctx, canvas, heading, pitch, fov, vfov, state.dayPaths.moon, "#8ea3c4");
+
   drawARBody(ctx, canvas, heading, pitch, fov, vfov, sun.azimuth, sun.altitude, "☀️", "#f5a623");
   drawARBody(ctx, canvas, heading, pitch, fov, vfov, moon.azimuth, moon.altitude, "🌙", "#8ea3c4");
 
@@ -156,6 +160,47 @@ function drawARBody(ctx, canvas, heading, pitch, fov, vfov, bodyAz, bodyAlt, emo
   }
 }
 
+// その日1日分の軌道(points)をカメラ映像上に線として描く（Lumos風の「移動線」）。
+// 画面内に収まる点だけを結び、毎正時には少し大きい点を打つ。
+function drawARPath(ctx, canvas, heading, pitch, fov, vfov, points, color) {
+  if (!points || points.length < 2) return;
+
+  const projected = points.map((p) => {
+    const diffAz = normalizeSignedDeg(p.azimuth - heading);
+    const diffAlt = p.altitude - pitch;
+    const onScreen = Math.abs(diffAz) <= fov / 2 && Math.abs(diffAlt) <= vfov / 2;
+    return {
+      x: canvas.width * (0.5 + diffAz / fov),
+      y: canvas.height * (0.5 - diffAlt / vfov),
+      onScreen,
+      isHour: p.time.getMinutes() === 0,
+    };
+  });
+
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+
+  for (let i = 0; i < projected.length - 1; i++) {
+    const a = projected[i];
+    const b = projected[i + 1];
+    if (!a.onScreen || !b.onScreen) continue;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  for (const p of projected) {
+    if (!p.onScreen || !p.isHour) continue;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 document.getElementById("btn-open-ar").addEventListener("click", startAR);
 document.getElementById("btn-close-ar").addEventListener("click", stopAR);
 
@@ -169,4 +214,16 @@ const fovSlider = document.getElementById("ar-fov");
 fovSlider.addEventListener("input", () => {
   arState.fov = Number(fovSlider.value);
   document.getElementById("ar-fov-label").textContent = `${arState.fov}°`;
+});
+
+// ARを開いたまま日付だけ動かせるように、メイン側の日付入力とここを相互に同期する
+document.getElementById("ar-date").addEventListener("change", (e) => {
+  document.getElementById("input-date").value = e.target.value;
+  updateAll();
+});
+document.querySelectorAll("[data-ar-shift-days]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    shiftSelectedDate(Number(btn.dataset.arShiftDays));
+    document.getElementById("ar-date").value = document.getElementById("input-date").value;
+  });
 });

@@ -30,6 +30,14 @@ const ICON_TARGET = makeIcon("🎯", "icon-target");
 const ICON_SUN = makeIcon("☀️", "icon-sun");
 const ICON_MOON = makeIcon("🌙", "icon-moon");
 
+// 高度が高いほど短く（頭上に近いイメージ）、低いほど長く伸ばす。drawBody/drawPathで共通利用。
+function distanceForAltitude(altitudeDeg) {
+  return Math.max(
+    BEARING_LINE_LENGTH_M * (1 - Math.min(Math.max(altitudeDeg, 0), 80) / 100),
+    40
+  );
+}
+
 class SceneLayers {
   constructor(map) {
     this.map = map;
@@ -39,6 +47,8 @@ class SceneLayers {
     this.sunMarker = null;
     this.moonLine = null;
     this.moonMarker = null;
+    this.sunPathLayer = null;
+    this.moonPathLayer = null;
   }
 
   setCameraMarker(latlng) {
@@ -64,9 +74,7 @@ class SceneLayers {
     const isSun = kind === "sun";
     const icon = isSun ? ICON_SUN : ICON_MOON;
     const color = isSun ? "#f5a623" : "#8ea3c4";
-    // 高度が高いほど線を短く（頭上に近いイメージ）、低いほど長く伸ばす
-    const length = BEARING_LINE_LENGTH_M * (1 - Math.min(Math.max(altitudeDeg, 0), 80) / 100);
-    const dest = destinationPoint(fromLatLng.lat, fromLatLng.lng, bearingDeg, Math.max(length, 40));
+    const dest = destinationPoint(fromLatLng.lat, fromLatLng.lng, bearingDeg, distanceForAltitude(altitudeDeg));
     const destLatLng = [dest.lat, dest.lng];
 
     const lineKey = isSun ? "sunLine" : "moonLine";
@@ -83,6 +91,44 @@ class SceneLayers {
       dashArray: altitudeDeg < 0 ? "4 6" : null,
     }).addTo(this.map);
     this[markerKey] = L.marker(destLatLng, { icon }).addTo(this.map);
+  }
+
+  // その日1日分の太陽/月の軌道を、地図上に弧として描く（Lumos風の「移動線」表示）。
+  // pathPoints は astro.js の getSunPathForDay/getMoonPathForDay の戻り値。
+  drawPath(kind, fromLatLng, pathPoints) {
+    const isSun = kind === "sun";
+    const color = isSun ? "#f5a623" : "#8ea3c4";
+    const layerKey = isSun ? "sunPathLayer" : "moonPathLayer";
+
+    if (this[layerKey]) this.map.removeLayer(this[layerKey]);
+    if (pathPoints.length < 2) return;
+
+    const group = L.layerGroup();
+    const latlngs = pathPoints.map((p) => {
+      const dest = destinationPoint(fromLatLng.lat, fromLatLng.lng, p.azimuth, distanceForAltitude(p.altitude));
+      return [dest.lat, dest.lng];
+    });
+    L.polyline(latlngs, { color, weight: 1.5, opacity: 0.55 }).addTo(group);
+
+    pathPoints.forEach((p, i) => {
+      if (p.time.getMinutes() !== 0) return; // 毎正時だけ目印を出す
+      const showLabel = p.time.getHours() % 3 === 0;
+      L.circleMarker(latlngs[i], { radius: showLabel ? 4 : 2.5, color, fillColor: color, fillOpacity: 0.9, weight: 1 }).addTo(group);
+      if (showLabel) {
+        L.marker(latlngs[i], {
+          icon: L.divIcon({
+            className: "path-hour-label",
+            html: `<span>${String(p.time.getHours()).padStart(2, "0")}</span>`,
+            iconSize: [24, 14],
+            iconAnchor: [12, -4],
+          }),
+          interactive: false,
+        }).addTo(group);
+      }
+    });
+
+    group.addTo(this.map);
+    this[layerKey] = group;
   }
 
   drawTargetLine(fromLatLng, toLatLng) {

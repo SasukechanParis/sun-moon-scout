@@ -46,6 +46,13 @@
       <input id="input-time" type="time" />
     </div>
     <div class="row">
+      <button data-shift-days="-7" class="ghost-btn">◀1週間</button>
+      <button data-shift-days="-1" class="ghost-btn">◀1日</button>
+      <button id="btn-today" class="ghost-btn">今日</button>
+      <button data-shift-days="1" class="ghost-btn">1日▶</button>
+      <button data-shift-days="7" class="ghost-btn">1週間▶</button>
+    </div>
+    <div class="row">
       <input id="input-time-slider" type="range" min="0" max="1439" value="720" />
       <span id="time-slider-label"></span>
     </div>
@@ -111,6 +118,12 @@
   <div class="ar-topbar">
     <button id="btn-close-ar">✕ 閉じる</button>
     <p id="ar-status" class="ar-status">起動中…</p>
+  </div>
+  <div class="ar-datebar">
+    <button data-ar-shift-days="-1" class="ghost-btn">◀1日</button>
+    <input id="ar-date" type="date" />
+    <button data-ar-shift-days="1" class="ghost-btn">1日▶</button>
+    <button data-ar-shift-days="7" class="ghost-btn">+1週間</button>
   </div>
   <div class="ar-controls">
     <label>方位のズレ補正

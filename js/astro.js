@@ -105,6 +105,31 @@ function reverseSearch({ lat, lng, body, targetAzimuth, azimuthTolerance = 3, al
   return matches;
 }
 
+// その日1日分の太陽/月の軌道を刻み幅でサンプリングする（地図・ARの「移動線」表示に使う）。
+// 地平線より十分下(-5°未満)の点は間引く。
+function getBodyPathForDay(date, lat, lng, getInfo, stepMinutes = 15) {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  const points = [];
+
+  for (let m = 0; m <= 24 * 60; m += stepMinutes) {
+    const t = new Date(dayStart.getTime() + m * 60 * 1000);
+    const info = getInfo(t, lat, lng);
+    if (info.altitude >= -5) {
+      points.push({ time: t, azimuth: info.azimuth, altitude: info.altitude });
+    }
+  }
+  return points;
+}
+
+function getSunPathForDay(date, lat, lng, stepMinutes = 15) {
+  return getBodyPathForDay(date, lat, lng, getSunInfo, stepMinutes);
+}
+
+function getMoonPathForDay(date, lat, lng, stepMinutes = 15) {
+  return getBodyPathForDay(date, lat, lng, getMoonInfo, stepMinutes);
+}
+
 // その日1日を刻み幅でスキャンし、月が地平線付近(altitudeMin〜altitudeMax)にいる連続した時間帯を返す
 function findLowMoonWindows(date, lat, lng, altitudeMin = 0, altitudeMax = 20, stepMinutes = 10) {
   const dayStart = new Date(date);

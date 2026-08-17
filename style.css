@@ -80,6 +80,15 @@ input[type="range"] { flex: 1; }
 
 .emoji-marker span { font-size: 22px; }
 
+.path-hour-label span {
+  font-size: 10px;
+  color: #555;
+  background: rgba(255,255,255,0.75);
+  padding: 0 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
 .verdict {
   font-size: 1.4rem;
   font-weight: bold;
@@ -170,6 +179,30 @@ input[type="range"] { flex: 1; }
   margin: 0;
   flex: 1;
 }
+.ar-datebar {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.45);
+}
+.ar-datebar input[type="date"] {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+.ar-datebar button {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
 .ar-controls {
   position: absolute;
   bottom: 0;

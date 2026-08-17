@@ -5,6 +5,7 @@ const state = {
   target: null,
   mode: "camera", // "camera" | "target"
   manualBearing: 0,
+  dayPaths: { sun: [], moon: [] }, // その日1日分の太陽/月の軌道サンプル。AR描画とも共有する。
 };
 
 const map = initMap("map");
@@ -107,6 +108,11 @@ function updateAll() {
   layers.drawBody("sun", state.camera, sun.azimuth, sun.altitude);
   layers.drawBody("moon", state.camera, moon.azimuth, moon.altitude);
 
+  state.dayPaths.sun = getSunPathForDay(dt, state.camera.lat, state.camera.lng);
+  state.dayPaths.moon = getMoonPathForDay(dt, state.camera.lat, state.camera.lng);
+  layers.drawPath("sun", state.camera, state.dayPaths.sun);
+  layers.drawPath("moon", state.camera, state.dayPaths.moon);
+
   const bearing = currentTargetBearing();
   const primaryBody = sun.altitude > 0 ? sun : moon;
   const verdict = classifyLight(bearing, primaryBody.azimuth, primaryBody.altitude);
@@ -184,6 +190,22 @@ manualSlider.addEventListener("input", () => {
 });
 
 // --- 日時 ---
+function shiftSelectedDate(days) {
+  const dt = getSelectedDateTime();
+  if (isNaN(dt.getTime())) return;
+  dt.setDate(dt.getDate() + days);
+  document.getElementById("input-date").value = toLocalDateInputValue(dt);
+  updateAll();
+}
+
+document.querySelectorAll("[data-shift-days]").forEach((btn) => {
+  btn.addEventListener("click", () => shiftSelectedDate(Number(btn.dataset.shiftDays)));
+});
+document.getElementById("btn-today").addEventListener("click", () => {
+  document.getElementById("input-date").value = toLocalDateInputValue(new Date());
+  updateAll();
+});
+
 document.getElementById("input-date").addEventListener("change", updateAll);
 document.getElementById("input-time").addEventListener("change", () => {
   syncTimeSliderFromInput();
