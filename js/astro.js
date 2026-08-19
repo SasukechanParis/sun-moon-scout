@@ -11,8 +11,16 @@ function getSunInfo(date, lat, lng) {
   };
 }
 
+// 方位・高度だけの軽量版。getMoonInfoは月の出/月の入りを求めるために内部で1日分(約720点)を
+// スキャンするため重い。逆算検索やAR描画など高頻度に呼ぶ場所は必ずこちらを使うこと。
+function getMoonAzAlt(date, lat, lng) {
+  return SunCalc.getMoonPosition(date, lat, lng);
+}
+
+// 結果パネル表示用のフル情報（月の出/月の入り込み）。呼び出しコストが高いので、
+// 1回の更新につき1回呼ぶような低頻度な場所だけで使う。
 function getMoonInfo(date, lat, lng) {
-  const pos = SunCalc.getMoonPosition(date, lat, lng);
+  const pos = getMoonAzAlt(date, lat, lng);
   const illum = SunCalc.getMoonIllumination(date);
   return {
     azimuth: pos.azimuth,
@@ -95,9 +103,10 @@ function reverseSearch({ lat, lng, body, targetAzimuth, azimuthTolerance = 3, al
   const totalSteps = Math.floor((days * 24 * 60) / stepMinutes);
   let cursor = new Date(fromDate);
   let prevDiff = null;
+  const getInfo = body === "moon" ? getMoonAzAlt : getSunInfo;
 
   for (let i = 0; i <= totalSteps; i++) {
-    const info = body === "moon" ? getMoonInfo(cursor, lat, lng) : getSunInfo(cursor, lat, lng);
+    const info = getInfo(cursor, lat, lng);
     let diff = normalizeDeg(info.azimuth - targetAzimuth);
     if (diff > 180) diff -= 360;
 
@@ -126,7 +135,7 @@ function reverseSearch({ lat, lng, body, targetAzimuth, azimuthTolerance = 3, al
 // reverseSearchが見つけた大まかな一致時刻(数分単位)を、目標方位にちょうど重なる瞬間まで追い込む。
 // お客様に約束する記録用の日時はここまで精度を上げてから保存する。
 function refineAzimuthCrossing(body, lat, lng, roughTime, targetAzimuth) {
-  const getInfo = body === "moon" ? getMoonInfo : getSunInfo;
+  const getInfo = body === "moon" ? getMoonAzAlt : getSunInfo;
   let t = roughTime.getTime();
 
   for (let i = 0; i < 4; i++) {
@@ -168,7 +177,7 @@ function getSunPathForDay(date, lat, lng, stepMinutes = 15) {
 }
 
 function getMoonPathForDay(date, lat, lng, stepMinutes = 15) {
-  return getBodyPathForDay(date, lat, lng, getMoonInfo, stepMinutes);
+  return getBodyPathForDay(date, lat, lng, getMoonAzAlt, stepMinutes);
 }
 
 // その日1日を刻み幅でスキャンし、月が地平線付近(altitudeMin〜altitudeMax)にいる連続した時間帯を返す
@@ -180,7 +189,7 @@ function findLowMoonWindows(date, lat, lng, altitudeMin = 0, altitudeMax = 20, s
 
   for (let m = 0; m <= 24 * 60; m += stepMinutes) {
     const t = new Date(dayStart.getTime() + m * 60 * 1000);
-    const info = getMoonInfo(t, lat, lng);
+    const info = getMoonAzAlt(t, lat, lng);
     const inWindow = info.altitude >= altitudeMin && info.altitude <= altitudeMax;
 
     if (inWindow && !current) {

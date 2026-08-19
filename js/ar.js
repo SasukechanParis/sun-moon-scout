@@ -109,7 +109,7 @@ function drawARFrame() {
 
   const dt = getSelectedDateTime();
   const sun = getSunInfo(dt, state.camera.lat, state.camera.lng);
-  const moon = getMoonInfo(dt, state.camera.lat, state.camera.lng);
+  const moon = getMoonAzAlt(dt, state.camera.lat, state.camera.lng); // 毎フレーム呼ぶのでmoonTimes抜きの軽量版を使う
 
   drawARPath(ctx, canvas, heading, pitch, fov, vfov, state.dayPaths.sun, "#f5a623");
   drawARPath(ctx, canvas, heading, pitch, fov, vfov, state.dayPaths.moon, "#8ea3c4");
