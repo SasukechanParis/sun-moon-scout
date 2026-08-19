@@ -138,6 +138,24 @@ input[type="range"] { flex: 1; }
 }
 #reverse-results li:active { background: #f0f4f8; }
 
+.spot-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.spot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.spot-header strong { font-size: 0.95rem; }
+.spot-item p { margin: 4px 0; font-size: 0.85rem; }
+.spot-item .ghost-btn { padding: 6px 10px; font-size: 0.8rem; }
+.spot-load { margin-top: 6px; }
+
 .ar-overlay {
   display: none;
   position: fixed;

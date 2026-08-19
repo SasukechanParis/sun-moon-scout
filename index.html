@@ -110,6 +110,35 @@
     </div>
     <ul id="reverse-results"></ul>
   </section>
+
+  <section class="panel">
+    <h2>⑤ この場所を記録する</h2>
+    <p class="hint">
+      現地で「ここいいな」と思った場所用。①の撮影位置(📷)と対象物(🎯)を両方置いた状態が前提——
+      コンパスは使わず、GPS二点間の方位から計算するので精度が高い。手動ダイヤルのみの場合も記録はできるが参考程度。
+    </p>
+    <p id="record-bearing-info" class="hint"></p>
+    <div class="row">
+      <label>対象天体
+        <select id="record-body">
+          <option value="sun">太陽</option>
+          <option value="moon">月</option>
+        </select>
+      </label>
+      <label>高度の条件
+        <select id="record-altitude-preset">
+          <option value="any">指定なし</option>
+          <option value="low">低め (0〜15°)</option>
+          <option value="golden">際どく低い (0〜6°)</option>
+          <option value="high">高め (45°以上)</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <button id="btn-record-spot">📌 この場所を記録する</button>
+    </div>
+    <ul id="saved-spots-list"></ul>
+  </section>
 </main>
 
 <div id="ar-overlay" class="ar-overlay">
@@ -139,11 +168,13 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
+<script src="https://unpkg.com/suncalc@2.0.1/suncalc.cjs"></script>
 <script src="js/geo.js"></script>
 <script src="js/astro.js"></script>
 <script src="js/mapview.js"></script>
+<script src="js/storage.js"></script>
 <script src="js/app.js"></script>
+<script src="js/record.js"></script>
 <script src="js/ar.js"></script>
 </body>
 </html>

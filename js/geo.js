@@ -14,6 +14,11 @@ function normalizeDeg(deg) {
   return ((deg % 360) + 360) % 360;
 }
 
+// -180〜+180の範囲に正規化する（例:目標との角度差の符号付き表現に使う）
+function normalizeSignedDeg(deg) {
+  return (((deg + 180) % 360) + 360) % 360 - 180;
+}
+
 // "48.8606, 2.3376" / Google Maps の "@48.8606,2.3376,17z" / OSM の "#map=17/48.8606/2.3376"
 // のいずれからでも緯度経度を取り出す。右クリックでコピーした座標をそのまま貼れることを優先する。
 function parseCoordinateInput(text) {

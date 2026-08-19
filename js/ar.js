@@ -12,10 +12,6 @@ const arState = {
   lastPitch: null,
 };
 
-function normalizeSignedDeg(deg) {
-  return (((deg + 180) % 360) + 360) % 360 - 180;
-}
-
 function onDeviceOrientation(e) {
   if (typeof e.webkitCompassHeading === "number") {
     // iOS Safari: 北=0、時計回り、磁北基準

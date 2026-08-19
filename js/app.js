@@ -121,6 +121,12 @@ function updateAll() {
   const bodyLabel = sun.altitude > 0 ? "太陽" : "月";
   verdictEl.textContent = `${verdict.label}（${bodyLabel}基準・撮影方向との角度差 ${Math.round(verdict.diff)}°）`;
 
+  const recordInfo = document.getElementById("record-bearing-info");
+  if (recordInfo) {
+    const sourceLabel = state.target ? "🎯対象物ピンから算出（コンパス不使用・高精度）" : "手動ダイヤル（参考程度）";
+    recordInfo.textContent = `現在の撮影方向: ${formatDeg(bearing)} (${bearingToLabel(bearing)}) — ${sourceLabel}`;
+  }
+
   renderLowMoonWindows(dt);
 }
 

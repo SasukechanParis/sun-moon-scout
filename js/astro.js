@@ -1,17 +1,12 @@
-// 太陽・月の位置計算（SunCalcのラッパー）と、光の向き判定・逆算検索
-
-// SunCalcの azimuth は「南=0、西方向がプラス」のラジアン。
-// コンパス方位（北=0、時計回り、度）に変換する。
-function azimuthRadToCompassDeg(azimuthRad) {
-  return normalizeDeg(toDeg(azimuthRad) + 180);
-}
+// 太陽・月の位置計算（SunCalc v2のラッパー）と、光の向き判定・逆算検索
+// SunCalc v2はazimuth/altitudeを最初からコンパス角度(北=0、時計回り、度)で返すため変換不要。
 
 function getSunInfo(date, lat, lng) {
   const pos = SunCalc.getPosition(date, lat, lng);
   const times = SunCalc.getTimes(date, lat, lng);
   return {
-    azimuth: azimuthRadToCompassDeg(pos.azimuth),
-    altitude: toDeg(pos.altitude),
+    azimuth: pos.azimuth,
+    altitude: pos.altitude,
     times,
   };
 }
@@ -19,14 +14,37 @@ function getSunInfo(date, lat, lng) {
 function getMoonInfo(date, lat, lng) {
   const pos = SunCalc.getMoonPosition(date, lat, lng);
   const illum = SunCalc.getMoonIllumination(date);
-  const moonTimes = SunCalc.getMoonTimes(date, lat, lng);
   return {
-    azimuth: azimuthRadToCompassDeg(pos.azimuth),
-    altitude: toDeg(pos.altitude),
+    azimuth: pos.azimuth,
+    altitude: pos.altitude,
     fraction: illum.fraction,
     phase: illum.phase,
-    moonTimes,
+    moonTimes: getMoonRiseSetForLocalDay(date, lat, lng),
   };
+}
+
+// SunCalc v2のgetMoonTimesはUTC暦日でスキャンする仕様のため、ブラウザのローカル日（表示上の1日）とは
+// パリ(UTC+1/+2)のようなタイムゾーンでずれる。高度がゼロを横切る瞬間を自前でローカル日基準で探す。
+function getMoonRiseSetForLocalDay(date, lat, lng, stepMinutes = 2) {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  const result = { rise: null, set: null };
+  let prevAlt = null;
+  let prevTime = null;
+
+  for (let m = 0; m <= 24 * 60; m += stepMinutes) {
+    const t = new Date(dayStart.getTime() + m * 60 * 1000);
+    const alt = SunCalc.getMoonPosition(t, lat, lng).altitude;
+    if (prevAlt !== null && Math.sign(prevAlt) !== Math.sign(alt)) {
+      const frac = prevAlt / (prevAlt - alt); // 線形補間でゼロ交差の時刻を求める
+      const crossTime = new Date(prevTime.getTime() + frac * (t - prevTime));
+      if (prevAlt < 0 && result.rise === null) result.rise = crossTime;
+      if (prevAlt >= 0 && result.set === null) result.set = crossTime;
+    }
+    prevAlt = alt;
+    prevTime = t;
+  }
+  return result;
 }
 
 const MOON_PHASE_LABELS = [
@@ -103,6 +121,29 @@ function reverseSearch({ lat, lng, body, targetAzimuth, azimuthTolerance = 3, al
   }
 
   return matches;
+}
+
+// reverseSearchが見つけた大まかな一致時刻(数分単位)を、目標方位にちょうど重なる瞬間まで追い込む。
+// お客様に約束する記録用の日時はここまで精度を上げてから保存する。
+function refineAzimuthCrossing(body, lat, lng, roughTime, targetAzimuth) {
+  const getInfo = body === "moon" ? getMoonInfo : getSunInfo;
+  let t = roughTime.getTime();
+
+  for (let i = 0; i < 4; i++) {
+    const stepMs = 60 * 1000;
+    const before = getInfo(new Date(t - stepMs), lat, lng).azimuth;
+    const after = getInfo(new Date(t + stepMs), lat, lng).azimuth;
+    let slope = normalizeSignedDeg(after - before) / (2 * stepMs); // 度/ms
+    if (Math.abs(slope) < 1e-9) break;
+
+    const current = getInfo(new Date(t), lat, lng).azimuth;
+    const diff = normalizeSignedDeg(current - targetAzimuth);
+    t -= diff / slope;
+  }
+
+  const refinedTime = new Date(t);
+  const info = getInfo(refinedTime, lat, lng);
+  return { time: refinedTime, azimuth: info.azimuth, altitude: info.altitude };
 }
 
 // その日1日分の太陽/月の軌道を刻み幅でサンプリングする（地図・ARの「移動線」表示に使う）。
