@@ -32,9 +32,26 @@ function recordCurrentSpot() {
     return;
   }
 
-  const refined = refineAzimuthCrossing(body, state.camera.lat, state.camera.lng, coarseMatches[0].date, bearing);
+  // 精密化は方位だけを合わせにいくため、粗い一致(5分刻み)の時点では高度条件を満たしていても、
+  // 精密な瞬間ではそこからわずかにずれて条件を外れることがある（例: 高度0°付近を狙ったのに
+  // 精密化後は日没後で条件外、など）。候補を順に精密化し、条件を満たす最初の一つを採用する。
+  const altitudeOk = (alt) =>
+    (altitudeMin === null || alt >= altitudeMin) && (altitudeMax === null || alt <= altitudeMax);
 
-  const name = prompt("この記録の名前・メモを入力してください（例: ポンヌフ北側、凱旋門バック）", "");
+  let refined = null;
+  for (const match of coarseMatches) {
+    const candidate = refineAzimuthCrossing(body, state.camera.lat, state.camera.lng, match.date, bearing);
+    if (altitudeOk(candidate.altitude)) {
+      refined = candidate;
+      break;
+    }
+  }
+  if (!refined) {
+    // どれも精密化後は条件を外れる場合は、それでも一番近い候補を採用する（無回答よりまし）
+    refined = refineAzimuthCrossing(body, state.camera.lat, state.camera.lng, coarseMatches[0].date, bearing);
+  }
+
+  const name = prompt("この記録の名前・メモを入力してください（例: ポンヌフ北側、凱旋門バック）", window.suggestedSpotName || "");
   if (name === null) return; // キャンセル
 
   addSavedSpot({
